@@ -1,6 +1,8 @@
 import os
 import numpy as np
 from PIL import Image
+import io
+import base64
 from sklearn.cluster import KMeans
 from flask import Flask, render_template, request, send_from_directory
 
@@ -12,11 +14,7 @@ def home():
 
 @app.route('/about')
 def about():
-    return """
-    <h1>À propos de moi</h1>
-    <p>Je suis en train d'apprendre à développer des applications web avec Flask.</p>
-    <a href="/">Retour à l'accueil</a>
-    """
+    return render_template('Apropos.html')
 
 @app.route('/map')
 def map_view():
@@ -77,18 +75,19 @@ def segmentation():
         img_reconstruite = centres[labels].reshape(h, w, c)
         
         res_pil = Image.fromarray(img_reconstruite)
-        nom_fichier_resultat = "temp_segmentation.png"
-        res_pil.save(os.path.join('static', nom_fichier_resultat))
-        image_segmentee_url = nom_fichier_resultat
+        
+        tampon = io.BytesIO()
+        res_pil.save(tampon, format="PNG") 
+    
+        contenu_base64 = base64.b64encode(tampon.getvalue()).decode('utf-8')
+        image_base64 = f"data:image/png;base64,{contenu_base64}"
 
     return render_template('segmentation.html', 
-                           chemin=chemin_dossier, 
                            nom_image=nom_image, 
                            k=k_clusters,
-                           resultat=image_segmentee_url)
+                           image_data=image_base64,
+                           chemin=chemin_dossier)
 
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
-
-

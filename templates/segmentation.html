@@ -33,8 +33,9 @@
 
             <div>
                 <h3>Segmentée (K={{ k }})</h3>
-                <img src="{{ url_for('static', filename=resultat) }}?v={{ range(1,1000)|random }}"
-                    style="max-width: 400px; border-radius: 10px; border: 3px solid #e67e22;">
+                {% if image_data %}
+                <img src="{{ image_data }}" style="max-width: 400px; border-radius: 10px; border: 3px solid #e67e22;">
+                {% endif %}
             </div>
         </div>
 
