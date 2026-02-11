@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ma Visionneuse Photos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <h1>Visionneuse Photo</h1>
+
+    <div class="main-content">
+        <form method="POST" action="/galerie">
+            <label>Étape 1 - Choisir le dossier :</label>
+            <input type="text" name="chemin" value="{{ chemin }}">
+            <button type="submit" class="nav-link">Scanner</button>
+        </form>
+
+        {% if erreur %}
+        <p style="color:red;">{{ erreur }}</p>
+        {% endif %}
+
+        <hr>
+
+        {% if images %}
+        <form method="GET" action="/galerie">
+            <input type="hidden" name="chemin" value="{{ chemin }}">
+
+            <label>Sélectionner l'image :</label>
+            <select name="image_selectionnee" onchange="this.form.submit()">
+                <option value="">-- Choisir une photo --</option>
+                {% for img in images %}
+                <option value="{{ img }}" {% if img==image_choisie %}selected{% endif %}>
+                    {{ img }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+
+        <div class="affichage-unique" style="margin-top: 30px; text-align: center;">
+            {% if image_choisie %}
+            <h3>{{ image_choisie }}</h3>
+            <img src="{{ url_for('image_brute', nom_image=image_choisie, dossier=chemin) }}"
+                style="max-width: 100%; max-height: 500px; border: 10px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            {% else %}
+            <p>Aucune image sélectionnée.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="/" class="nav-link">Retour à l'accueil</a>
+</body>
+
+</html>
