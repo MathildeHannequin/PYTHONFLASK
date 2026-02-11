@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Analyse K-Means</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <h1>Segmentation de l'image par K-Means</h1>
+
+    <div class="main-content">
+        <p>Image analysée : <strong>{{ nom_image }}</strong></p>
+
+        <form method="GET" action="/segmentation">
+            <input type="hidden" name="chemin" value="{{ chemin }}">
+            <input type="hidden" name="image_selectionnee" value="{{ nom_image }}">
+
+            <label>Nombre de clusters (K) :</label>
+            <input type="range" name="k" min="2" max="20" value="{{ k }}"
+                oninput="this.nextElementSibling.value = this.value">
+            <output>{{ k }}</output>
+
+            <button type="submit" class="nav-link">Relancer l'algorithme</button>
+        </form>
+
+        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+            <div>
+                <h3>Originale</h3>
+                <img src="{{ url_for('image_brute', nom_image=nom_image, dossier=chemin) }}"
+                    style="max-width: 400px; border-radius: 10px;">
+            </div>
+
+            <div>
+                <h3>Segmentée (K={{ k }})</h3>
+                <img src="{{ url_for('static', filename=resultat) }}?v={{ range(1,1000)|random }}"
+                    style="max-width: 400px; border-radius: 10px; border: 3px solid #e67e22;">
+            </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <a href="/galerie?chemin={{ chemin }}" class="nav-link">Retour à la galerie</a>
+        </div>
+    </div>
+</body>
+
+</html>

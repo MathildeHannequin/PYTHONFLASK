@@ -47,7 +47,19 @@
             <p>Aucune image sélectionnée.</p>
             {% endif %}
         </div>
+
+        {% if image_choisie %}
+        <div style="margin-top: 20px;">
+            <a href="{{ url_for('segmentation', chemin=chemin, image_selectionnee=image_choisie) }}" class="nav-link"
+                style="background-color: #e67e22;">
+                Algorithme K-Means
+            </a>
+        </div>
+        {% endif %}
+
     </div>
+
+
 
     <a href="/" class="nav-link">Retour à l'accueil</a>
 </body>
