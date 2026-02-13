@@ -109,11 +109,13 @@ def executer_segmentation():
 def segmentation_dbscan():
     chemin_dossier = request.args.get('chemin')
     nom_image = request.args.get('image_selectionnee')
-    
     eps = request.args.get('eps', 5.0, type=float)
     min_samples = request.args.get('min_samples', 10, type=int)
     
     image_base64 = None
+    n_clusters_ = 0
+    n_bruit = 0
+    pourcentage_bruit = 0
 
     if chemin_dossier and nom_image:
         try:
@@ -126,7 +128,12 @@ def segmentation_dbscan():
             db = DBSCAN(eps=eps, min_samples=min_samples)
             labels = db.fit_predict(pixels)
 
-            n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+            unique_labels, counts = np.unique(labels, return_counts=True)
+            stats_labels = dict(zip(unique_labels, counts))
+
+            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+            n_bruit = int(stats_labels.get(-1, 0)) # On force en int pour Flask
+            pourcentage_bruit = round((n_bruit / len(labels)) * 100, 2)
             
             centres = np.zeros((len(set(labels)), 3), dtype=np.uint8)
             for i in set(labels):
@@ -145,12 +152,15 @@ def segmentation_dbscan():
         except Exception as e:
             print(f"Erreur DBSCAN : {e}")
 
-    return render_template('dbscan.html', 
+        return render_template('dbscan.html', 
                            nom_image=nom_image, 
                            eps=eps, 
                            min_samples=min_samples,
                            image_data=image_base64, 
-                           chemin=chemin_dossier)
+                           chemin=chemin_dossier,
+                           n_clusters=n_clusters_, 
+                           n_bruit=n_bruit,
+                           pourcentage_bruit=pourcentage_bruit)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

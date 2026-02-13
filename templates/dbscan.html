@@ -30,9 +30,27 @@
 
         <div style="text-align: center; margin-top: 20px;">
             {% if image_data %}
-            <img src="{{ image_data }}" style="max-width: 500px; border: 5px solid #2ecc71; border-radius: 10px;">
+            <div
+                style="background-color: #f8f9fa; border-left: 5px solid #2ecc71; padding: 15px; margin: 20px auto; max-width: 500px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3 style="margin-top: 0; color: #2ecc71;">Résultats de l'analyse</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li><strong>Nombre de segments (clusters) :</strong> {{ n_clusters }}</li>
+                    <li><strong>Points de bruit (non étiquetés) :</strong> {{ n_bruit }}</li>
+                    <li><strong>Taux de bruit :</strong> {{ pourcentage_bruit }} %</li>
+                </ul>
+                <p style="font-size: 0.85em; color: #666; font-style: italic;">
+                    Si le bruit est trop élevé, essayez d'augmenter <strong>Eps</strong> ou de réduire
+                    <strong>Min_samples</strong>.
+                </p>
+            </div>
+
+
+            <div style="text-align: center;">
+                <img src="{{ image_data }}" style="max-width: 500px; border: 5px solid #2ecc71; border-radius: 10px;">
+            </div>
             {% endif %}
         </div>
+
         <a href="/galerie?chemin={{ chemin }}" class="nav-link">Retour</a>
     </div>
 </body>
