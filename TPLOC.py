@@ -4,6 +4,7 @@ from PIL import Image
 import io
 import base64
 from sklearn.cluster import KMeans
+from sklearn.cluster import AgglomerativeClustering
 from flask import Flask, render_template, request, send_from_directory
 
 app = Flask(__name__)
@@ -50,44 +51,58 @@ def image_brute(nom_image):
     dossier = request.args.get('dossier')
     return send_from_directory(dossier, nom_image)
 
-@app.route('/segmentation')
-def segmentation():
+@app.route('/executer_segmentation')
+def executer_segmentation():
     chemin_dossier = request.args.get('chemin')
     nom_image = request.args.get('image_selectionnee')
-    k_clusters = request.args.get('k', 5, type=int) 
+    k = request.args.get('k', 5, type=int)
+    methode = request.args.get('methode', 'kmeans')
     
-    image_segmentee_url = None
+    nom_methode = "K-Means" 
+    image_base64 = None
 
     if chemin_dossier and nom_image:
-        chemin_complet = os.path.join(chemin_dossier, nom_image)
-        
-        img = Image.open(chemin_complet).convert('RGB')
-        img_np = np.array(img)
-        h, w, c = img_np.shape
-        
-        pixels = img_np.reshape(-1, c)
-        print(pixels.shape)
-        
-        kmeans = KMeans(n_clusters=k_clusters, n_init=10)
-        labels = kmeans.fit_predict(pixels)
-        
-        centres = kmeans.cluster_centers_.astype(np.uint8)
-        img_reconstruite = centres[labels].reshape(h, w, c)
-        
-        res_pil = Image.fromarray(img_reconstruite)
-        
-        tampon = io.BytesIO()
-        res_pil.save(tampon, format="PNG") 
-    
-        contenu_base64 = base64.b64encode(tampon.getvalue()).decode('utf-8')
-        image_base64 = f"data:image/png;base64,{contenu_base64}"
+        try:
+            img = Image.open(os.path.join(chemin_dossier, nom_image)).convert('RGB')
+            
+            taille_max = 100 if methode == 'hc' else 300
+            img.thumbnail((taille_max, taille_max))
+            
+            img_np = np.array(img)
+            h, w, c = img_np.shape
+            pixels = img_np.reshape(-1, c)
+
+            if methode == 'hc':
+                model = AgglomerativeClustering(n_clusters=k, metric='euclidean', linkage='complete')
+                nom_methode = "Hiérarchique (CAH)" # Mise à jour si c'est HC
+            else:
+                model = KMeans(n_clusters=k, n_init=10)
+                nom_methode = "K-Means" # Mise à jour si c'est KMeans
+
+
+            labels = model.fit_predict(pixels)
+
+            if methode == 'hc':
+                centres = np.array([pixels[labels == i].mean(axis=0) for i in range(k)]).astype(np.uint8)
+            else:
+                centres = model.cluster_centers_.astype(np.uint8)
+            
+            img_reconstruite = centres[labels].reshape(h, w, c)
+
+            res_pil = Image.fromarray(img_reconstruite)
+            tampon = io.BytesIO()
+            res_pil.save(tampon, format="PNG")
+            image_base64 = f"data:image/png;base64,{base64.b64encode(tampon.getvalue()).decode('utf-8')}"
+            
+        except Exception as e:
+            print(f"Erreur lors de la segmentation : {e}")
 
     return render_template('segmentation.html', 
                            nom_image=nom_image, 
-                           k=k_clusters,
+                           k=k,
                            image_data=image_base64,
-                           chemin=chemin_dossier)
-
+                           chemin=chemin_dossier,
+                           methode=nom_methode)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

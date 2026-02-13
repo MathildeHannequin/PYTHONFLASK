@@ -93,3 +93,10 @@ select {
     width: 100%;
     max-width: 400px;
 }
+
+.affichage-segmentation img {
+    width: 400px;
+    height: auto;
+    border: 3px solid #ddd;
+    border-radius: 8px;
+}
