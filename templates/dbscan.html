@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DBSCAN - Densité</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <h1>Segmentation par Densité (DBSCAN)</h1>
+    <div class="main-content">
+        <form method="GET" action="/segmentation_dbscan">
+            <input type="hidden" name="chemin" value="{{ chemin }}">
+            <input type="hidden" name="image_selectionnee" value="{{ nom_image }}">
+
+            <label>Écart max (Eps) :</label>
+            <input type="range" name="eps" min="1" max="50" step="0.5" value="{{ eps }}"
+                oninput="this.nextElementSibling.value = this.value">
+            <output>{{ eps }}</output>
+
+            <br>
+
+            <label>Densité min (Samples) :</label>
+            <input type="range" name="min_samples" min="2" max="50" value="{{ min_samples }}"
+                oninput="this.nextElementSibling.value = this.value">
+            <output>{{ min_samples }}</output>
+
+            <button type="submit" class="nav-link">Scanner la densité</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            {% if image_data %}
+            <img src="{{ image_data }}" style="max-width: 500px; border: 5px solid #2ecc71; border-radius: 10px;">
+            {% endif %}
+        </div>
+        <a href="/galerie?chemin={{ chemin }}" class="nav-link">Retour</a>
+    </div>
+</body>
+
+</html>

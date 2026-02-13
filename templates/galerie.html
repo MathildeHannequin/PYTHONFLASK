@@ -50,12 +50,16 @@
 
         <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
             <a href="{{ url_for('executer_segmentation', chemin=chemin, image_selectionnee=image_choisie, methode='kmeans') }}"
-                class="nav-link">
+                class="nav-link" style="background-color: #cc2e55;">
                 K-Means
             </a>
             <a href="{{ url_for('executer_segmentation', chemin=chemin, image_selectionnee=image_choisie, methode='hc') }}"
-                class="nav-link">
+                class="nav-link" style="background-color: #2e72cc;">
                 Hiérarchique
+            </a>
+            <a href="{{ url_for('segmentation_dbscan', chemin=chemin, image_selectionnee=image_choisie) }}"
+                class="nav-link" style="background-color: #2ecc71;">
+                DBSCAN
             </a>
         </div>
 
