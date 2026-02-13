@@ -8,6 +8,9 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import DBSCAN
 from flask import Flask, render_template, request, send_from_directory
 
+def rgb_to_hex(rgb):
+    return '#{:02x}{:02x}{:02x}'.format(rgb[0], rgb[1], rgb[2])
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -124,6 +127,7 @@ def segmentation_dbscan():
             img_np = np.array(img)
             h, w, c = img_np.shape
             pixels = img_np.reshape(-1, c)
+            palette = []
 
             db = DBSCAN(eps=eps, min_samples=min_samples)
             labels = db.fit_predict(pixels)
@@ -132,17 +136,29 @@ def segmentation_dbscan():
             stats_labels = dict(zip(unique_labels, counts))
 
             n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-            n_bruit = int(stats_labels.get(-1, 0)) # On force en int pour Flask
+            n_bruit = int(stats_labels.get(-1, 0)) 
             pourcentage_bruit = round((n_bruit / len(labels)) * 100, 2)
             
-            centres = np.zeros((len(set(labels)), 3), dtype=np.uint8)
-            for i in set(labels):
+            unique_labels = set(labels)
+            centres = np.zeros((len(unique_labels), 3), dtype=np.uint8)
+            
+            for i in unique_labels:
+                if i == -1:
+                    centres[i] = [0, 0, 0] 
+                else:
+                    centres[i] = pixels[labels == i].mean(axis=0)
+            
+            unique_labels = set(labels)
+            centres = np.zeros((len(unique_labels), 3), dtype=np.uint8)
+            
+            for i in unique_labels:
                 if i == -1:
                     centres[i] = [0, 0, 0] 
                 else:
                     centres[i] = pixels[labels == i].mean(axis=0)
             
             img_reconstruite = centres[labels].reshape(h, w, c)
+            palette = [rgb_to_hex(centres[i]) for i in unique_labels if i != -1]
 
             res_pil = Image.fromarray(img_reconstruite)
             tampon = io.BytesIO()
@@ -151,6 +167,7 @@ def segmentation_dbscan():
             
         except Exception as e:
             print(f"Erreur DBSCAN : {e}")
+            
 
         return render_template('dbscan.html', 
                            nom_image=nom_image, 
@@ -160,7 +177,8 @@ def segmentation_dbscan():
                            chemin=chemin_dossier,
                            n_clusters=n_clusters_, 
                            n_bruit=n_bruit,
-                           pourcentage_bruit=pourcentage_bruit)
+                           pourcentage_bruit=pourcentage_bruit,
+                           palette=palette)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
